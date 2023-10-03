@@ -1,0 +1,33 @@
+// Output Type: CMOT Float 3
+// Input: InLightDir, InNormalWS, InCameraVector, InThickness, InThicknessPoewr, InSSSColor, InSSSIntensity, InComplexion
+// ※ InThickness: Thickness map. Thickest parts should have a value of 1. Thinnest 0.
+// Additional Outputs: Complexion(CMOT Float 3)
+// Output
+// - result: SSS Backlight. Connect to emissive.
+// - Complexion: Connect to Base Color to add complexion based on thickness map.
+
+struct Function
+{
+     float3 SSS(float3 InLightDir, float3 InNormalWS, float3 InCameraVector, float InThickness, float InThicknessPower, float3 InSSSColor, float InSSSIntensity)
+     {
+          float3 H = InLightDir + InNormalWS;
+          float3 VdotH = dot(InCameraVector, -H);
+          float Thickness = pow((1 - InThickness), InThicknessPower);
+          float3 result = VdotH * Thickness * InSSSColor * InSSSIntensity;
+
+          return result;
+     }
+
+     float3 Complexion(float3 InSSSColor, float InComplexion)
+     {
+          float Thickness = pow((1 - InThickness), InThicknessPower);
+          return Thickness * InComplexion;
+     }
+};
+
+Function f;
+float3 CalculatedSSS = f.SSS(InLightDir, InNormalWS, InCameraVector, InThickness, InThicknessPower, InSSSColor, InSSSIntensity);
+
+Complexion = f.Complexion(InSSSColor, InComplexion);
+
+return CalculatedSSS;
