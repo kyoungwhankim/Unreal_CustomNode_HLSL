@@ -1,0 +1,18 @@
+// [TimeLoop]
+// This function makes GameTime to loop between 0 and 1 with the speed given as InInterval.
+// Used for optimization where a device cannot handle huge numbers.
+// Output Type: CMOT Float 1
+// Input
+// - InInterval: Speed to be multiplied to time.
+// - InClip: The biggest number in seconds which can be remapped to 0 ~ 1 value. For example, a value of 100 means 0 ~ 100 seconds can be remapped to 0 ~ 1.
+
+float Interval = 0.0;
+float NormalTime = 0.0;
+
+if(abs(InInterval) > 0.0)
+{
+    Interval = clamp(1.0 / InInterval, -InClip, InClip);
+    NormalTime = fmod(View.GameTime, abs(Interval)) / Interval;
+}
+
+return NormalTime;
