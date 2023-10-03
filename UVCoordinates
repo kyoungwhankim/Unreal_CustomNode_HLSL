@@ -1,0 +1,46 @@
+// UVCoordinates
+// This function makes GameTime to loop between 0 and 1 with the speed given as InInterval while controling uv coordinates based on the normalized time.
+// Output Type: CMOT Float 2
+// Inputs
+// - InUV: Connect TexCoord
+// - InIntervalX: UV Moving Speed X
+// - InIntervalY: UV Moving Speed Y
+// - InScaleX: UV Scale X
+// - InScaleY: UV Scale Y
+// - InOffsetX: UV Move X
+// - InOffsetY: UV Move Y
+// - InClip: The biggest number in seconds which can be remapped to 0 ~ 1 value. For example, a value of 100 means 0 ~ 100 seconds can be remapped to 0 ~ 1.
+
+float IntervalX = 0.0;
+float NormalTimeX = 0.0;
+
+if(abs(InIntervalX) > 0.0)
+{
+    IntervalX = clamp(1.0 / InIntervalX, -InClip, InClip);
+    NormalTimeX = fmod(View.GameTime, abs(IntervalX)) * (1.0 / IntervalX);
+}
+
+float IntervalY = 0.0;
+float NormalTimeY = 0.0;
+
+if(abs(InIntervalY) > 0.0)
+{
+    IntervalY = clamp(1.0 / InIntervalY, -InClip, InClip);
+    NormalTimeY = fmod(View.GameTime, abs(IntervalY)) * (1.0 / IntervalY);
+}
+
+//float2 UV = fmod(InUV, 1.0);
+float2 UV = InUV;
+
+UV *= float2(InScaleX, InScaleY);
+UV += float2(InOffsetX, InOffsetY);
+UV += float2(NormalTimeX, NormalTimeY);
+
+
+// #if PIXELSHADER
+//     UV = frac(UV);
+//     UV = ddx(UV) < 0.9 ? UV : float2(1.0, 1.0);
+//     UV = ddy(UV) < 0.9 ? UV : float2(1.0, 1.0);
+// #endif
+
+return UV;
