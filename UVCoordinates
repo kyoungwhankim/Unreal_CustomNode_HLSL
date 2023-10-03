@@ -29,18 +29,10 @@ if(abs(InIntervalY) > 0.0)
     NormalTimeY = fmod(View.GameTime, abs(IntervalY)) * (1.0 / IntervalY);
 }
 
-//float2 UV = fmod(InUV, 1.0);
 float2 UV = InUV;
 
 UV *= float2(InScaleX, InScaleY);
 UV += float2(InOffsetX, InOffsetY);
 UV += float2(NormalTimeX, NormalTimeY);
-
-
-// #if PIXELSHADER
-//     UV = frac(UV);
-//     UV = ddx(UV) < 0.9 ? UV : float2(1.0, 1.0);
-//     UV = ddy(UV) < 0.9 ? UV : float2(1.0, 1.0);
-// #endif
 
 return UV;
