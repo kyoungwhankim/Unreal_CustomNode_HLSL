@@ -1,0 +1,66 @@
+// Output Type: CMOT Float 3
+// Inputs: InWaveLength, InWaveSpee,d InWaveSteepness, InWaveHeight, InWaveDirection, InWorldPosition, InBaseNormal
+// Additional Outputs: FinalNormal(CMOT Float 3), Time(CMOT Float 1)
+// Output
+// - result: connect to WPO
+// - FinalNormal: connect to Normal
+// - Time: Use for setting timings of other waves, foams, etc
+
+
+struct Function
+{
+    float3 BlendAngleCorrectedNormals(float3 BaseNormal, float3 AdditionalNormal)
+    {
+        float3 tempA = float3(BaseNormal.xy, BaseNormal.z + 1.0);
+        float3 tempB = float3(-AdditionalNormal.xy, AdditionalNormal.z);
+        return tempA * dot(tempA, tempB) - (BaseNormal.z + 1.0) * tempB;
+    }
+
+    float CalculateTime(float InWaveLength, float InWaveSpeed)
+    {
+        float PI = 3.141592;
+        float NormalTime = 0;
+        float Interval = InWaveSpeed * sqrt(980.0 * (2 * PI / InWaveLength)) / (2 * PI);
+        if (abs(Interval) > 0.0)
+        {
+            float NewInterval = clamp(1.0 / Interval, -100.0, 100.0);
+            NormalTime = 6.283185 * (fmod(View.GameTime, abs(NewInterval)) / NewInterval);
+        }
+
+        return NormalTime;
+    }
+
+    float3 GerstnerWaveWPO(float InWaveLength, float InWaveSpeed, float InWaveSteepness, float InWaveHeight, float3 InWaveDirection, float3 InWorldPosition, float Time)
+    {
+        float PI = 3.141592;
+        float3 NormalizedDir = normalize(InWaveDirection);
+        float temp = dot(InWorldPosition, NormalizedDir * ((2 * PI) / InWaveLength)) - Time;
+        float3 Wave = (cos(temp) * float3(0, 0, 1) * InWaveHeight) - (NormalizedDir * sin(temp) * InWaveHeight * (InWaveSteepness / ((2 * PI) / InWaveLength * InWaveHeight))) + InWaveHeight;
+
+        return Wave;
+    }
+
+
+    float3 GerstnerWaveNormal(float InWaveLength, float InWaveSpeed, float InWaveSteepness, float InWaveHeight, float3 InWaveDirection, float3 InWorldPosition, float InBaseNormal, float Time)
+    {
+        float PI = 3.141592;
+        float3 NormalizedDir = normalize(InWaveDirection);
+        float2 tempA = (sin(dot(InWorldPosition, NormalizedDir * ((2 * PI) / InWaveLength)) - Time) * ((2 * PI) / InWaveLength) * InWaveHeight * NormalizedDir).xy;
+        float tempB = 1 - ((cos(dot(InWorldPosition, NormalizedDir * ((2 * PI) / InWaveLength)) - Time) * ((2 * PI) / InWaveLength)) * (InWaveSteepness / (((2 * PI) / InWaveLength) * InWaveHeight)));
+        float3 WaveNormal = float3(tempA, tempB);
+
+        return WaveNormal;
+    }
+};
+
+Function f;
+float CalculatedTime = f.CalculateTime(InWaveLength, InWaveSpeed);
+float3 WaveWPO = f.GerstnerWaveWPO(InWaveLength, InWaveSpeed, InWaveSteepness, InWaveHeight, InWaveDirection, InWorldPosition, CalculatedTime);
+
+float3 WaveNormal = f.GerstnerWaveNormal(InWaveLength, InWaveSpeed, InWaveSteepness, InWaveHeight, InWaveDirection, InWorldPosition, InBaseNormal, CalculatedTime);
+
+FinalNormal = f.BlendAngleCorrectedNormals(InBaseNormal, WaveNormal);
+
+Time = CalculatedTime;
+
+return WaveWPO;
