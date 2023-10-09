@@ -1,0 +1,19 @@
+// Output Type: CMOT Float 1
+// Inputs: Flowmap, FlowmapStrength, UV
+// Additional Outputs: UV1(CMOT Float 2), UV2(CMOT Float 2), LerpAlpha(CMOT Float 1)
+// Output
+// - result: 
+// - UV1: TextureSampler 2개 중 첫번째의 UV로 연결
+// - UV2: TextureSampler 2개 중 두번째의 UV로 연결
+// - LerpAlpha: Lerp 노드의 Alpha에 연결. Lerp 노드의 A, B값에는 각각 Texture Sampler의 결과값을 연결.
+
+if (FlowmapStrength > 0)
+{
+     UV0 = Flowmap * FlowmapStrength * frac(View.GameTime) + TextureCoordinate;
+     UV1 = Flowmap * FlowmapStrength * frac(View.GameTime + 0.5) + UV;
+     LerpAlpha = abs(frac(View.GameTime) * 2.0 - 1.0);
+
+     return true;
+}
+
+return false;
