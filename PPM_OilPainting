@@ -1,0 +1,79 @@
+Connect Viewport Texture Coordinate to UV(of Oil Paint Effect), 
+SceneTexture:PostProcessInput0 Color to SceneTexture(of Oil Paint Effect), 
+SceneTexture:PostProcessInput0 InvSize to InvSize(of Oil Paint Effect), 
+and Scalar Parameter for effect intensity to Radius(of Oil Paint Effect).
+---------------------------------------------------------------------------------------------------------
+// Oil Paint Effect
+// Reference: https://ferkizue.blogspot.com/2018/04/oil-painting-post-process-effect-in.html
+
+// Output Type: CMOT Float 4
+// Inputs: SceneTexture, UV, Radius, InvSize 
+
+int TexIndex = 14;
+
+int intensityCount[10];
+float avgR[10];
+float avgG[10];
+float avgB[10];
+ 
+
+for (int iLevel = 0; iLevel < 10; iLevel++)
+{
+ 	intensityCount[iLevel] = 0;
+    avgR[iLevel] = 0.0;
+    avgG[iLevel] = 0.0;
+    avgB[iLevel] = 0.0;
+}
+
+
+
+UV *= 0.5;
+for (int i = 0; i < Radius; ++i)
+{
+	int offsetI = -1 *(Radius / 2) + i;
+    float v = UV.y + offsetI * InvSize.y;
+    int temp = i * Radius;
+    for (int j = 0; j < Radius; ++j)
+    {
+    	int offsetJ = -(Radius / 2) + j;
+        float u = UV.x + offsetJ * InvSize.x;
+        float2 uvShifted = UV + float2(u, v);
+        float3 tex = SceneTextureLookup(uvShifted, TexIndex, false);
+
+        float currentIntensity = ((tex.r + tex.g + tex.b) / 3 * 10);
+        intensityCount[currentIntensity]++;
+        avgR[currentIntensity] += tex.r;
+        avgG[currentIntensity] += tex.g;
+        avgB[currentIntensity] += tex.b;
+    }
+}
+
+
+float maxIntensity = 0;
+int maxIndex = 0;
+
+for(int cLevel = 0; cLevel < 10; cLevel++)
+{
+	if(intensityCount[cLevel] > maxIntensity)
+    {
+    	maxIntensity = intensityCount[cLevel];
+        maxIndex = cLevel;
+    }
+}
+
+float newR = avgR[maxIndex] / maxIntensity;
+float newG = avgG[maxIndex] / maxIntensity;
+float newB = avgB[maxIndex] / maxIntensity;
+
+float4 res = float4(newR, newG, newB, 1.0);
+
+return res;
+
+---------------------------------------------------------------------------------------------------------
+// Viewport Texture Coordinate
+// Reference: https://ferkizue.blogspot.com/2018/07/fixing-wrong-scene-size-in-unreal-419.html
+
+// No Inputs
+// Output Type: CMOT Float 2
+return GetDefaultSceneTextureUV(Parameters, 14);
+---------------------------------------------------------------------------------------------------------
