@@ -1,3 +1,5 @@
+Work in Post Process Material
+
 Connect Viewport Texture Coordinate to UV(of Oil Paint Effect), 
 SceneTexture:PostProcessInput0 Color to SceneTexture(of Oil Paint Effect), 
 SceneTexture:PostProcessInput0 InvSize to InvSize(of Oil Paint Effect), 
