@@ -1,0 +1,51 @@
+// Output Type: CMOT Float 1
+// Inputs: LayerA~LayerH (Layer Samples), PhysicalTypeA~PhysicalTypeH (Physical Type Numbers. ex. grass:01, mud:02, sand:03)
+// Output
+// - result: Blended Physical Type Map
+
+// This custom node gets layers samples and physicaltype numbers designated by level designers for each layer and outputs a map that allocates physicaltype number of the layer weight that has the highest value among all.
+// For example, if a pixel has layer03 weight value of 1, then the pixel is allocated with the physicaltype number that layer03 has(which the level designer designated probably in the material instance)
+struct Functions
+{
+	int FindMaxWeightLayer(float Layers[8])
+	{
+		for (int i = 0; i < 8; ++i)
+		{
+			for (int j = 1; j < 8; ++j)
+			{
+				if (Layers[i] <= Layers[(i + j) % 8])
+				{
+					break;
+				}
+				if (j == 7)
+				{
+					return i;
+				}
+			}
+
+		}
+		return -1;
+	}
+
+	float MakePhysicalTypeMap(int DominantLayer, int PhysicalTypes[8], int PhysicalTypeDefault)
+	{
+		if (DominantLayer < 0)
+		{
+			return PhysicalTypeDefault;
+		}
+		return PhysicalTypes[DominantLayer];
+	}
+};
+
+if (Puddle >= 0.5)
+{
+    return PhysicalTypePuddle;
+}
+
+float Layers[8] = { LayerA, LayerB, LayerC, LayerD, LayerE, LayerF, LayerG, LayerH };
+
+int PhysicalTypes[8] = { PhysicalTypeA, PhysicalTypeB, PhysicalTypeC, PhysicalTypeD, PhysicalTypeE, PhysicalTypeF, PhysicalTypeG, PhysicalTypeH };
+
+Functions f;
+
+return f.MakePhysicalTypeMap(f.FindMaxWeightLayer(Layers), PhysicalTypes, PhysicalTypeDefault);
